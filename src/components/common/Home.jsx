@@ -22,6 +22,7 @@ import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import FlipIcon from '@mui/icons-material/Flip';
 import TuneIcon from '@mui/icons-material/Tune';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
+import FilterIcon from '@mui/icons-material/Filter';
 
 const FeatureCard = styled(Card)(({ theme }) => ({
   height: '100%',
@@ -99,6 +100,13 @@ const features = [
     icon: <EqualizerIcon fontSize="large" />,
     path: '/image-normalize',
     color: '#8bc34a'
+  },
+  {
+    title: 'Operações Morfológicas',
+    description: 'Aplique dilatação, erosão, abertura e fechamento em imagens.',
+    icon: <FilterIcon fontSize="large" />,
+    path: '/morphological-operations',
+    color: '#9c27b0'
   }
 ];
 

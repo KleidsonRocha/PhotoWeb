@@ -155,11 +155,20 @@ function Navbar() {
               </NavLink>
               
               <NavLink to="/image-highlight">
-                <ListItem button selected={isActive('/image-highlight')} sx={{ pl: 4 }}>
+                <ListItem button selected={isActive("/image-highlight")} sx={{ pl: 4 }}>
                   <ListItemIcon>
                     <TuneIcon />
                   </ListItemIcon>
                   <ListItemText primary="Realce de Imagem" />
+                </ListItem>
+              </NavLink>
+              
+              <NavLink to="/morphological-operations">
+                <ListItem button selected={isActive("/morphological-operations")} sx={{ pl: 4 }}>
+                  <ListItemIcon>
+                    <FilterListIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Operações Morfológicas" />
                 </ListItem>
               </NavLink>
             </List>

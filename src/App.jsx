@@ -9,6 +9,7 @@ import BorderDetector from './components/filters/BorderDetection';
 import GaussianFilter from './components/filters/GaussianFilter';
 import ImageCleaner from './components/filters/ImageCleaner';
 import ImageHighlight from './components/filters/ImageHighlight';
+import MorphologicalOperations from './components/filters/MorphologicalOperations';
 import ColorConverter from './components/tools/ColorConverter';
 import ImageCalculator from './components/tools/ImageCalculator';
 import ImageFlipper from './components/tools/ImageFlipper';
@@ -30,6 +31,7 @@ function App() {
             <Route path="/image-calculator" element={<ImageCalculator />} />
             <Route path="/image-flipper" element={<ImageFlipper />} />
             <Route path="/image-normalize" element={<ImageNormalize />} />
+            <Route path="/morphological-operations" element={<MorphologicalOperations />} />
           </Routes>
         </Router>
       </NavbarProvider>

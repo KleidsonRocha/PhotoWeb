@@ -324,3 +324,244 @@ export const applyLoG = (image, sigma = 1.4) => {
     }
   };
 };
+
+// Função auxiliar para criar um elemento estruturante
+const createStructuringElement = (size) => {
+  // Garantir que o tamanho é ímpar
+  const kernelSize = size % 2 === 0 ? size + 1 : size;
+  const radius = Math.floor(kernelSize / 2);
+  
+  // Criar matriz quadrada preenchida com 1s
+  const kernel = [];
+  for (let y = 0; y < kernelSize; y++) {
+    const row = [];
+    for (let x = 0; x < kernelSize; x++) {
+      // Você pode modificar isso para criar diferentes formas de elementos estruturantes
+      // Por exemplo, um disco em vez de um quadrado
+      row.push(1);
+    }
+    kernel.push(row);
+  }
+  
+  return { kernel, radius };
+};
+
+// Função para aplicar dilatação
+export const applyDilate = (img, kernelSize = 3, iterations = 1) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  
+  let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  
+  // Criar elemento estruturante
+  const { kernel, radius } = createStructuringElement(kernelSize);
+  
+  // Aplicar dilatação o número de vezes especificado
+  for (let iter = 0; iter < iterations; iter++) {
+    imgData = dilateOperation(imgData, kernel, radius);
+    
+    // Se não for a última iteração, atualizar o canvas para a próxima iteração
+    if (iter < iterations - 1) {
+      ctx.putImageData(imgData, 0, 0);
+      imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+  }
+  
+  // Atualizar o canvas com a imagem final
+  ctx.putImageData(imgData, 0, 0);
+  
+  return {
+    processedImageData: canvas.toDataURL(),
+    kernel
+  };
+};
+
+// Função para aplicar erosão
+export const applyErode = (img, kernelSize = 3, iterations = 1) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  
+  let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  
+  // Criar elemento estruturante
+  const { kernel, radius } = createStructuringElement(kernelSize);
+  
+  // Aplicar erosão o número de vezes especificado
+  for (let iter = 0; iter < iterations; iter++) {
+    imgData = erodeOperation(imgData, kernel, radius);
+    
+    // Se não for a última iteração, atualizar o canvas para a próxima iteração
+    if (iter < iterations - 1) {
+      ctx.putImageData(imgData, 0, 0);
+      imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+  }
+  
+  // Atualizar o canvas com a imagem final
+  ctx.putImageData(imgData, 0, 0);
+  
+  return {
+    processedImageData: canvas.toDataURL(),
+    kernel
+  };
+};
+
+// Função para aplicar abertura (erosão seguida de dilatação)
+export const applyOpening = (img, kernelSize = 3, iterations = 1) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  
+  let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  
+  // Criar elemento estruturante
+  const { kernel, radius } = createStructuringElement(kernelSize);
+  
+  // Aplicar erosão
+  for (let iter = 0; iter < iterations; iter++) {
+    imgData = erodeOperation(imgData, kernel, radius);
+    ctx.putImageData(imgData, 0, 0);
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  }
+  
+  // Aplicar dilatação
+  for (let iter = 0; iter < iterations; iter++) {
+    imgData = dilateOperation(imgData, kernel, radius);
+    
+    // Se não for a última iteração, atualizar o canvas para a próxima iteração
+    if (iter < iterations - 1) {
+      ctx.putImageData(imgData, 0, 0);
+      imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+  }
+  
+  // Atualizar o canvas com a imagem final
+  ctx.putImageData(imgData, 0, 0);
+  
+  return {
+    processedImageData: canvas.toDataURL(),
+    kernel
+  };
+};
+
+// Função para aplicar fechamento (dilatação seguida de erosão)
+export const applyClosing = (img, kernelSize = 3, iterations = 1) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  
+  let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  
+  // Criar elemento estruturante
+  const { kernel, radius } = createStructuringElement(kernelSize);
+  
+  // Aplicar dilatação
+  for (let iter = 0; iter < iterations; iter++) {
+    imgData = dilateOperation(imgData, kernel, radius);
+    ctx.putImageData(imgData, 0, 0);
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  }
+  
+  // Aplicar erosão
+  for (let iter = 0; iter < iterations; iter++) {
+    imgData = erodeOperation(imgData, kernel, radius);
+    
+    // Se não for a última iteração, atualizar o canvas para a próxima iteração
+    if (iter < iterations - 1) {
+      ctx.putImageData(imgData, 0, 0);
+      imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+  }
+  
+  // Atualizar o canvas com a imagem final
+  ctx.putImageData(imgData, 0, 0);
+  
+  return {
+    processedImageData: canvas.toDataURL(),
+    kernel
+  };
+};
+
+// Implementação da operação de dilatação
+const dilateOperation = (imgData, kernel, radius) => {
+  const { width, height, data } = imgData;
+  const output = new ImageData(width, height);
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      // Para cada pixel, encontrar o valor máximo na vizinhança
+      let maxR = 0, maxG = 0, maxB = 0;
+      
+      for (let ky = -radius; ky <= radius; ky++) {
+        for (let kx = -radius; kx <= radius; kx++) {
+          // Verificar se o elemento estruturante tem valor 1 nesta posição
+          if (kernel[ky + radius][kx + radius] === 1) {
+            const ny = Math.max(0, Math.min(y + ky, height - 1));
+            const nx = Math.max(0, Math.min(x + kx, width - 1));
+            const idx = (ny * width + nx) * 4;
+            
+            maxR = Math.max(maxR, data[idx]);
+            maxG = Math.max(maxG, data[idx + 1]);
+            maxB = Math.max(maxB, data[idx + 2]);
+          }
+        }
+      }
+      
+      // Definir o pixel de saída com os valores máximos encontrados
+      const outIdx = (y * width + x) * 4;
+      output.data[outIdx] = maxR;
+      output.data[outIdx + 1] = maxG;
+      output.data[outIdx + 2] = maxB;
+      output.data[outIdx + 3] = 255; // Alpha sempre 255
+    }
+  }
+  
+  return output;
+};
+
+// Implementação da operação de erosão
+const erodeOperation = (imgData, kernel, radius) => {
+  const { width, height, data } = imgData;
+  const output = new ImageData(width, height);
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      // Para cada pixel, encontrar o valor mínimo na vizinhança
+      let minR = 255, minG = 255, minB = 255;
+      
+      for (let ky = -radius; ky <= radius; ky++) {
+        for (let kx = -radius; kx <= radius; kx++) {
+          // Verificar se o elemento estruturante tem valor 1 nesta posição
+          if (kernel[ky + radius][kx + radius] === 1) {
+            const ny = Math.max(0, Math.min(y + ky, height - 1));
+            const nx = Math.max(0, Math.min(x + kx, width - 1));
+            const idx = (ny * width + nx) * 4;
+            
+            minR = Math.min(minR, data[idx]);
+            minG = Math.min(minG, data[idx + 1]);
+            minB = Math.min(minB, data[idx + 2]);
+          }
+        }
+      }
+      
+      // Definir o pixel de saída com os valores mínimos encontrados
+      const outIdx = (y * width + x) * 4;
+      output.data[outIdx] = minR;
+      output.data[outIdx + 1] = minG;
+      output.data[outIdx + 2] = minB;
+      output.data[outIdx + 3] = 255; // Alpha sempre 255
+    }
+  }
+  
+  return output;
+};

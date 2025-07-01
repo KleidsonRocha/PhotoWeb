@@ -13,7 +13,7 @@ COPY --from=build-stage /app/dist /usr/share/nginx/html
 
 # Configuração inline do Nginx para React Router
 RUN echo 'server { \
-    listen 80; \
+    listen 90; \
     server_name localhost; \
     \
     location / { \
@@ -31,5 +31,5 @@ RUN echo 'server { \
     gzip_disable "MSIE [1-6]\."; \
 }' > /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+EXPOSE 90
 CMD ["nginx", "-g", "daemon off;"]

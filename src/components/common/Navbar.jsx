@@ -11,6 +11,9 @@ import {
   Collapse,
   ListItemButton
 } from '@mui/material';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import TransformIcon from '@mui/icons-material/Transform';
+import FilterVintageIcon from '@mui/icons-material/FilterVintage';
 import { styled } from '@mui/material/styles';
 import { NavbarContext } from '../../contexts/NavbarContext';
 import { Link, useLocation } from 'react-router-dom';
@@ -219,6 +222,30 @@ function Navbar() {
                     <EqualizerIcon />
                   </ListItemIcon>
                   <ListItemText primary="Normalização de Histograma" />
+                </ListItem>
+              </NavLink>
+              <NavLink to="/image-enhancer">
+                <ListItem button selected={isActive('/image-enhancer')} sx={{ pl: 4 }}>
+                  <ListItemIcon>
+                    <AutoFixHighIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Melhora de Imagem" />
+                </ListItem>
+              </NavLink>
+              <NavLink to="/image-transformer">
+                <ListItem button selected={isActive('/image-transformer')} sx={{ pl: 4 }}>
+                  <ListItemIcon>
+                    <TransformIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Transformações de Imagem" />
+                </ListItem>
+              </NavLink>
+              <NavLink to="/advanced-filters">
+                <ListItem button selected={isActive('/advanced-filters')} sx={{ pl: 4 }}>
+                  <ListItemIcon>
+                    <FilterVintageIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Filtros Avançados" />
                 </ListItem>
               </NavLink>
             </List>

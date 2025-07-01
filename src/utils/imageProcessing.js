@@ -1,6 +1,6 @@
 // Funções utilitárias para processamento de imagem
 
-// Converter para escala de cinza
+// Converte imagem para escala de cinza calculando a média dos canais RGB
 export const toGrayscale = (imageData) => {
   const data = imageData.data;
   for (let i = 0; i < data.length; i += 4) {
@@ -12,7 +12,7 @@ export const toGrayscale = (imageData) => {
   return imageData;
 };
 
-// Aplicar filtro gaussiano para redução de ruído
+// Aplica filtro gaussiano para suavizar a imagem e reduzir ruído
 export const applyGaussianBlur = (imageData, width, height) => {
   const kernel = [
     [1/16, 2/16, 1/16],
@@ -23,7 +23,8 @@ export const applyGaussianBlur = (imageData, width, height) => {
   return applyConvolution(imageData, width, height, kernel);
 };
 
-// Aplicar convolução com um kernel específico
+// Aplica uma matriz de convolução aos pixels da imagem
+// Usado como base para vários filtros como blur, detecção de bordas, etc.
 export const applyConvolution = (imageData, width, height, kernel) => {
   const data = imageData.data;
   const output = new Uint8ClampedArray(data.length);
@@ -60,7 +61,7 @@ export const applyConvolution = (imageData, width, height, kernel) => {
   return result;
 };
 
-// Aplicar detecção de bordas usando Sobel
+// Detecta bordas usando o operador Sobel, que calcula gradientes horizontais e verticais
 export const applySobel = (image) => {
   const canvas = document.createElement('canvas');
   canvas.width = image.width;
@@ -125,7 +126,7 @@ export const applySobel = (image) => {
   };
 };
 
-// Aplicar detecção de bordas usando Prewitt
+// Detecta bordas usando o operador Prewitt, similar ao Sobel mas com pesos diferentes
 export const applyPrewitt = (image) => {
   const canvas = document.createElement('canvas');
   canvas.width = image.width;
@@ -190,7 +191,7 @@ export const applyPrewitt = (image) => {
   };
 };
 
-// Aplicar detecção de bordas usando Laplaciano
+// Detecta bordas usando o operador Laplaciano, que identifica mudanças bruscas de intensidade
 export const applyLaplacian = (image) => {
   const canvas = document.createElement('canvas');
   canvas.width = image.width;
@@ -243,7 +244,7 @@ export const applyLaplacian = (image) => {
   };
 };
 
-// Função adicional: Aplicar detecção de bordas usando Laplaciano do Gaussiano (LoG)
+// Aplica o filtro Laplaciano do Gaussiano (LoG) para detecção de bordas Combina o filtro gaussiano com o laplaciano para detecção mais precisa
 export const applyLoG = (image, sigma = 1.4) => {
   const canvas = document.createElement('canvas');
   canvas.width = image.width;
@@ -325,7 +326,7 @@ export const applyLoG = (image, sigma = 1.4) => {
   };
 };
 
-// Função auxiliar para criar um elemento estruturante
+// Função auxiliar para criar um elemento estruturante para operações morfológicas
 const createStructuringElement = (size) => {
   // Garantir que o tamanho é ímpar
   const kernelSize = size % 2 === 0 ? size + 1 : size;
@@ -346,7 +347,7 @@ const createStructuringElement = (size) => {
   return { kernel, radius };
 };
 
-// Função para aplicar dilatação
+// Aplica operação de dilatação morfológica, expandindo áreas claras da imagem
 export const applyDilate = (img, kernelSize = 3, iterations = 1) => {
   const canvas = document.createElement('canvas');
   canvas.width = img.width;
@@ -379,7 +380,7 @@ export const applyDilate = (img, kernelSize = 3, iterations = 1) => {
   };
 };
 
-// Função para aplicar erosão
+// Aplica operação de erosão morfológica, reduzindo áreas claras da imagem
 export const applyErode = (img, kernelSize = 3, iterations = 1) => {
   const canvas = document.createElement('canvas');
   canvas.width = img.width;
@@ -412,7 +413,7 @@ export const applyErode = (img, kernelSize = 3, iterations = 1) => {
   };
 };
 
-// Função para aplicar abertura (erosão seguida de dilatação)
+// Aplica abertura morfológica (erosão seguida de dilatação) para remover pequenos detalhes
 export const applyOpening = (img, kernelSize = 3, iterations = 1) => {
   const canvas = document.createElement('canvas');
   canvas.width = img.width;
@@ -452,7 +453,7 @@ export const applyOpening = (img, kernelSize = 3, iterations = 1) => {
   };
 };
 
-// Função para aplicar fechamento (dilatação seguida de erosão)
+// Aplica fechamento morfológico (dilatação seguida de erosão) para preencher pequenos buracos
 export const applyClosing = (img, kernelSize = 3, iterations = 1) => {
   const canvas = document.createElement('canvas');
   canvas.width = img.width;
@@ -492,7 +493,7 @@ export const applyClosing = (img, kernelSize = 3, iterations = 1) => {
   };
 };
 
-// Implementação da operação de dilatação
+// Implementa a operação de dilatação, encontrando o valor máximo na vizinhança de cada pixel
 const dilateOperation = (imgData, kernel, radius) => {
   const { width, height, data } = imgData;
   const output = new ImageData(width, height);
@@ -529,7 +530,7 @@ const dilateOperation = (imgData, kernel, radius) => {
   return output;
 };
 
-// Implementação da operação de erosão
+// Implementa a operação de erosão, encontrando o valor mínimo na vizinhança de cada pixel
 const erodeOperation = (imgData, kernel, radius) => {
   const { width, height, data } = imgData;
   const output = new ImageData(width, height);
@@ -566,7 +567,7 @@ const erodeOperation = (imgData, kernel, radius) => {
   return output;
 };
 
-// Função para ajustar brilho da imagem
+// Ajusta o brilho da imagem adicionando um valor constante a cada canal de cor
 export const adjustBrightness = (imageData, brightness) => {
   const data = imageData.data;
   const output = new Uint8ClampedArray(data.length);
@@ -581,7 +582,7 @@ export const adjustBrightness = (imageData, brightness) => {
   return new ImageData(output, imageData.width, imageData.height);
 };
 
-// Função para ajustar contraste da imagem
+// Ajusta o contraste da imagem usando uma fórmula de ajuste de contraste
 export const adjustContrast = (imageData, contrast) => {
   const data = imageData.data;
   const output = new Uint8ClampedArray(data.length);
@@ -597,7 +598,7 @@ export const adjustContrast = (imageData, contrast) => {
   return new ImageData(output, imageData.width, imageData.height);
 };
 
-// Função para ajustar saturação da imagem
+// Ajusta a saturação da imagem misturando valores originais com escala de cinza
 export const adjustSaturation = (imageData, saturation) => {
   const data = imageData.data;
   const output = new Uint8ClampedArray(data.length);
@@ -620,7 +621,7 @@ export const adjustSaturation = (imageData, saturation) => {
   return new ImageData(output, imageData.width, imageData.height);
 };
 
-// Função para inverter cores da imagem
+// Inverte as cores da imagem, subtraindo cada valor de 255
 export const invertColors = (imageData) => {
   const data = imageData.data;
   const output = new Uint8ClampedArray(data.length);
@@ -635,7 +636,7 @@ export const invertColors = (imageData) => {
   return new ImageData(output, imageData.width, imageData.height);
 };
 
-// Função para aplicar filtro sépia
+// Aplica efeito sépia usando uma matriz de transformação de cores
 export const applySepia = (imageData) => {
   const data = imageData.data;
   const output = new Uint8ClampedArray(data.length);
@@ -648,13 +649,13 @@ export const applySepia = (imageData) => {
     output[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));     // R
     output[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168)); // G
     output[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131)); // B
-    output[i + 3] = data[i + 3]; // Alpha
+        output[i + 3] = data[i + 3]; // Alpha
   }
   
   return new ImageData(output, imageData.width, imageData.height);
 };
 
-// Função para aplicar filtro de desfoque (blur) simples
+// Aplica um desfoque simples calculando a média dos pixels vizinhos
 export const applySimpleBlur = (imageData, radius = 1) => {
   const { width, height, data } = imageData;
   const output = new Uint8ClampedArray(data.length);
@@ -688,7 +689,7 @@ export const applySimpleBlur = (imageData, radius = 1) => {
   return new ImageData(output, width, height);
 };
 
-// Função para aplicar filtro de nitidez (sharpen)
+// Aplica filtro de nitidez (sharpen) usando uma matriz de convolução que acentua diferenças
 export const applySharpen = (imageData) => {
   const sharpenKernel = [
     [0, -1, 0],
@@ -699,7 +700,7 @@ export const applySharpen = (imageData) => {
   return applyConvolution(imageData, imageData.width, imageData.height, sharpenKernel);
 };
 
-// Função para rotacionar imagem
+// Rotaciona a imagem em um ângulo específico em graus
 export const rotateImage = (image, angle) => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -723,7 +724,7 @@ export const rotateImage = (image, angle) => {
   return canvas.toDataURL();
 };
 
-// Função para espelhar imagem horizontalmente
+// Espelha a imagem horizontalmente (inverte da esquerda para a direita)
 export const flipHorizontal = (image) => {
   const canvas = document.createElement('canvas');
   canvas.width = image.width;
@@ -736,7 +737,7 @@ export const flipHorizontal = (image) => {
   return canvas.toDataURL();
 };
 
-// Função para espelhar imagem verticalmente
+// Espelha a imagem verticalmente (inverte de cima para baixo)
 export const flipVertical = (image) => {
   const canvas = document.createElement('canvas');
   canvas.width = image.width;
@@ -749,7 +750,7 @@ export const flipVertical = (image) => {
   return canvas.toDataURL();
 };
 
-// Função para redimensionar imagem
+// Redimensiona a imagem para novas dimensões especificadas
 export const resizeImage = (image, newWidth, newHeight) => {
   const canvas = document.createElement('canvas');
   canvas.width = newWidth;
@@ -761,7 +762,7 @@ export const resizeImage = (image, newWidth, newHeight) => {
   return canvas.toDataURL();
 };
 
-// Função para aplicar filtro de emboss (relevo)
+// Aplica efeito de relevo (emboss) que destaca transições entre áreas claras e escuras
 export const applyEmboss = (imageData) => {
   const embossKernel = [
     [-2, -1, 0],
@@ -772,7 +773,7 @@ export const applyEmboss = (imageData) => {
   return applyConvolution(imageData, imageData.width, imageData.height, embossKernel);
 };
 
-// Função para aplicar filtro de detecção de bordas simples
+// Aplica detecção de bordas simples usando uma matriz de convolução
 export const applyEdgeDetection = (imageData) => {
   const edgeKernel = [
     [-1, -1, -1],
@@ -783,7 +784,7 @@ export const applyEdgeDetection = (imageData) => {
   return applyConvolution(imageData, imageData.width, imageData.height, edgeKernel);
 };
 
-// Função para aplicar threshold (binarização)
+// Aplica threshold (binarização) para converter a imagem em preto e branco
 export const applyThreshold = (imageData, threshold = 128) => {
   const data = imageData.data;
   const output = new Uint8ClampedArray(data.length);
@@ -802,7 +803,7 @@ export const applyThreshold = (imageData, threshold = 128) => {
   return new ImageData(output, imageData.width, imageData.height);
 };
 
-// Função para aplicar filtro de ruído (noise)
+// Adiciona ruído aleatório à imagem para criar efeito granulado
 export const addNoise = (imageData, intensity = 50) => {
   const data = imageData.data;
   const output = new Uint8ClampedArray(data.length);
@@ -819,7 +820,7 @@ export const addNoise = (imageData, intensity = 50) => {
   return new ImageData(output, imageData.width, imageData.height);
 };
 
-// Função para aplicar filtro de mediana (para redução de ruído)
+// Aplica filtro de mediana para redução de ruído preservando bordas
 export const applyMedianFilter = (imageData, radius = 1) => {
   const { width, height, data } = imageData;
   const output = new Uint8ClampedArray(data.length);
@@ -859,7 +860,7 @@ export const applyMedianFilter = (imageData, radius = 1) => {
   return new ImageData(output, width, height);
 };
 
-// Função para equalização de histograma
+// Equaliza o histograma da imagem para melhorar contraste e distribuição de tons
 export const equalizeHistogram = (imageData) => {
   const data = imageData.data;
   const output = new Uint8ClampedArray(data.length);
@@ -917,4 +918,3 @@ export const applyImageDataFilter = (image, filterFunction, ...args) => {
   
   return canvas.toDataURL();
 };
-

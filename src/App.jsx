@@ -23,7 +23,7 @@ function App() {
   return (
     <ThemeProvider>
       <NavbarProvider>
-        <Router>
+        <Router basename="/processamento-imagem">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/border-detector" element={<BorderDetector />} />

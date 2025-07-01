@@ -14,6 +14,9 @@ import ColorConverter from './components/tools/ColorConverter';
 import ImageCalculator from './components/tools/ImageCalculator';
 import ImageFlipper from './components/tools/ImageFlipper';
 import ImageNormalize from './components/tools/ImageNormalize';
+import ImageEnhancer from './components/tools/ImageEnhancer';
+import ImageTransformer from './components/tools/ImageTransformer';
+import AdvancedFilters from './components/filters/AdvancedFilters';
 import Home from './components/common/Home';
 
 function App() {
@@ -31,6 +34,9 @@ function App() {
             <Route path="/image-calculator" element={<ImageCalculator />} />
             <Route path="/image-flipper" element={<ImageFlipper />} />
             <Route path="/image-normalize" element={<ImageNormalize />} />
+            <Route path="/image-enhancer" element={<ImageEnhancer />} />
+            <Route path="/image-transformer" element={<ImageTransformer />} />
+            <Route path="/advanced-filters" element={<AdvancedFilters />} />
             <Route path="/morphological-operations" element={<MorphologicalOperations />} />
           </Routes>
         </Router>

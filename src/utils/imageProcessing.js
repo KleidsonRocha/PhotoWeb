@@ -565,3 +565,356 @@ const erodeOperation = (imgData, kernel, radius) => {
   
   return output;
 };
+
+// Função para ajustar brilho da imagem
+export const adjustBrightness = (imageData, brightness) => {
+  const data = imageData.data;
+  const output = new Uint8ClampedArray(data.length);
+  
+  for (let i = 0; i < data.length; i += 4) {
+    output[i] = Math.max(0, Math.min(255, data[i] + brightness));     // R
+    output[i + 1] = Math.max(0, Math.min(255, data[i + 1] + brightness)); // G
+    output[i + 2] = Math.max(0, Math.min(255, data[i + 2] + brightness)); // B
+    output[i + 3] = data[i + 3]; // Alpha
+  }
+  
+  return new ImageData(output, imageData.width, imageData.height);
+};
+
+// Função para ajustar contraste da imagem
+export const adjustContrast = (imageData, contrast) => {
+  const data = imageData.data;
+  const output = new Uint8ClampedArray(data.length);
+  const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+  
+  for (let i = 0; i < data.length; i += 4) {
+    output[i] = Math.max(0, Math.min(255, factor * (data[i] - 128) + 128));     // R
+    output[i + 1] = Math.max(0, Math.min(255, factor * (data[i + 1] - 128) + 128)); // G
+    output[i + 2] = Math.max(0, Math.min(255, factor * (data[i + 2] - 128) + 128)); // B
+    output[i + 3] = data[i + 3]; // Alpha
+  }
+  
+  return new ImageData(output, imageData.width, imageData.height);
+};
+
+// Função para ajustar saturação da imagem
+export const adjustSaturation = (imageData, saturation) => {
+  const data = imageData.data;
+  const output = new Uint8ClampedArray(data.length);
+  
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    
+    // Converter para escala de cinza
+    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+    
+    // Aplicar saturação
+    output[i] = Math.max(0, Math.min(255, gray + saturation * (r - gray)));
+    output[i + 1] = Math.max(0, Math.min(255, gray + saturation * (g - gray)));
+    output[i + 2] = Math.max(0, Math.min(255, gray + saturation * (b - gray)));
+    output[i + 3] = data[i + 3]; // Alpha
+  }
+  
+  return new ImageData(output, imageData.width, imageData.height);
+};
+
+// Função para inverter cores da imagem
+export const invertColors = (imageData) => {
+  const data = imageData.data;
+  const output = new Uint8ClampedArray(data.length);
+  
+  for (let i = 0; i < data.length; i += 4) {
+    output[i] = 255 - data[i];     // R
+    output[i + 1] = 255 - data[i + 1]; // G
+    output[i + 2] = 255 - data[i + 2]; // B
+    output[i + 3] = data[i + 3]; // Alpha
+  }
+  
+  return new ImageData(output, imageData.width, imageData.height);
+};
+
+// Função para aplicar filtro sépia
+export const applySepia = (imageData) => {
+  const data = imageData.data;
+  const output = new Uint8ClampedArray(data.length);
+  
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    
+    output[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));     // R
+    output[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168)); // G
+    output[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131)); // B
+    output[i + 3] = data[i + 3]; // Alpha
+  }
+  
+  return new ImageData(output, imageData.width, imageData.height);
+};
+
+// Função para aplicar filtro de desfoque (blur) simples
+export const applySimpleBlur = (imageData, radius = 1) => {
+  const { width, height, data } = imageData;
+  const output = new Uint8ClampedArray(data.length);
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let r = 0, g = 0, b = 0, count = 0;
+      
+      // Calcular a média dos pixels na vizinhança
+      for (let dy = -radius; dy <= radius; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          const ny = Math.max(0, Math.min(y + dy, height - 1));
+          const nx = Math.max(0, Math.min(x + dx, width - 1));
+          const idx = (ny * width + nx) * 4;
+          
+          r += data[idx];
+          g += data[idx + 1];
+          b += data[idx + 2];
+          count++;
+        }
+      }
+      
+      const idx = (y * width + x) * 4;
+      output[idx] = r / count;
+      output[idx + 1] = g / count;
+      output[idx + 2] = b / count;
+      output[idx + 3] = data[idx + 3]; // Alpha
+    }
+  }
+  
+  return new ImageData(output, width, height);
+};
+
+// Função para aplicar filtro de nitidez (sharpen)
+export const applySharpen = (imageData) => {
+  const sharpenKernel = [
+    [0, -1, 0],
+    [-1, 5, -1],
+    [0, -1, 0]
+  ];
+  
+  return applyConvolution(imageData, imageData.width, imageData.height, sharpenKernel);
+};
+
+// Função para rotacionar imagem
+export const rotateImage = (image, angle) => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Calcular novas dimensões após rotação
+  const radians = (angle * Math.PI) / 180;
+  const cos = Math.abs(Math.cos(radians));
+  const sin = Math.abs(Math.sin(radians));
+  
+  const newWidth = Math.ceil(image.width * cos + image.height * sin);
+  const newHeight = Math.ceil(image.width * sin + image.height * cos);
+  
+  canvas.width = newWidth;
+  canvas.height = newHeight;
+  
+  // Mover para o centro e rotacionar
+  ctx.translate(newWidth / 2, newHeight / 2);
+  ctx.rotate(radians);
+  ctx.drawImage(image, -image.width / 2, -image.height / 2);
+  
+  return canvas.toDataURL();
+};
+
+// Função para espelhar imagem horizontalmente
+export const flipHorizontal = (image) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const ctx = canvas.getContext('2d');
+  
+  ctx.scale(-1, 1);
+  ctx.drawImage(image, -image.width, 0);
+  
+  return canvas.toDataURL();
+};
+
+// Função para espelhar imagem verticalmente
+export const flipVertical = (image) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const ctx = canvas.getContext('2d');
+  
+  ctx.scale(1, -1);
+  ctx.drawImage(image, 0, -image.height);
+  
+  return canvas.toDataURL();
+};
+
+// Função para redimensionar imagem
+export const resizeImage = (image, newWidth, newHeight) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = newWidth;
+  canvas.height = newHeight;
+  const ctx = canvas.getContext('2d');
+  
+  ctx.drawImage(image, 0, 0, newWidth, newHeight);
+  
+  return canvas.toDataURL();
+};
+
+// Função para aplicar filtro de emboss (relevo)
+export const applyEmboss = (imageData) => {
+  const embossKernel = [
+    [-2, -1, 0],
+    [-1, 1, 1],
+    [0, 1, 2]
+  ];
+  
+  return applyConvolution(imageData, imageData.width, imageData.height, embossKernel);
+};
+
+// Função para aplicar filtro de detecção de bordas simples
+export const applyEdgeDetection = (imageData) => {
+  const edgeKernel = [
+    [-1, -1, -1],
+    [-1, 8, -1],
+    [-1, -1, -1]
+  ];
+  
+  return applyConvolution(imageData, imageData.width, imageData.height, edgeKernel);
+};
+
+// Função para aplicar threshold (binarização)
+export const applyThreshold = (imageData, threshold = 128) => {
+  const data = imageData.data;
+  const output = new Uint8ClampedArray(data.length);
+  
+  for (let i = 0; i < data.length; i += 4) {
+    // Converter para escala de cinza primeiro
+    const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    const value = gray > threshold ? 255 : 0;
+    
+    output[i] = value;     // R
+    output[i + 1] = value; // G
+    output[i + 2] = value; // B
+    output[i + 3] = data[i + 3]; // Alpha
+  }
+  
+  return new ImageData(output, imageData.width, imageData.height);
+};
+
+// Função para aplicar filtro de ruído (noise)
+export const addNoise = (imageData, intensity = 50) => {
+  const data = imageData.data;
+  const output = new Uint8ClampedArray(data.length);
+  
+  for (let i = 0; i < data.length; i += 4) {
+    const noise = (Math.random() - 0.5) * intensity * 2;
+    
+    output[i] = Math.max(0, Math.min(255, data[i] + noise));     // R
+    output[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise)); // G
+    output[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise)); // B
+    output[i + 3] = data[i + 3]; // Alpha
+  }
+  
+  return new ImageData(output, imageData.width, imageData.height);
+};
+
+// Função para aplicar filtro de mediana (para redução de ruído)
+export const applyMedianFilter = (imageData, radius = 1) => {
+  const { width, height, data } = imageData;
+  const output = new Uint8ClampedArray(data.length);
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const rValues = [], gValues = [], bValues = [];
+      
+      // Coletar valores dos pixels na vizinhança
+      for (let dy = -radius; dy <= radius; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          const ny = Math.max(0, Math.min(y + dy, height - 1));
+          const nx = Math.max(0, Math.min(x + dx, width - 1));
+          const idx = (ny * width + nx) * 4;
+          
+          rValues.push(data[idx]);
+          gValues.push(data[idx + 1]);
+          bValues.push(data[idx + 2]);
+        }
+      }
+      
+      // Ordenar e pegar a mediana
+      rValues.sort((a, b) => a - b);
+      gValues.sort((a, b) => a - b);
+      bValues.sort((a, b) => a - b);
+      
+      const medianIndex = Math.floor(rValues.length / 2);
+      const idx = (y * width + x) * 4;
+      
+      output[idx] = rValues[medianIndex];
+      output[idx + 1] = gValues[medianIndex];
+      output[idx + 2] = bValues[medianIndex];
+      output[idx + 3] = data[idx + 3]; // Alpha
+    }
+  }
+  
+  return new ImageData(output, width, height);
+};
+
+// Função para equalização de histograma
+export const equalizeHistogram = (imageData) => {
+  const data = imageData.data;
+  const output = new Uint8ClampedArray(data.length);
+  const histogram = new Array(256).fill(0);
+  const totalPixels = imageData.width * imageData.height;
+  
+  // Calcular histograma para escala de cinza
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+    histogram[gray]++;
+  }
+  
+  // Calcular função de distribuição cumulativa
+  const cdf = new Array(256);
+  cdf[0] = histogram[0];
+  for (let i = 1; i < 256; i++) {
+    cdf[i] = cdf[i - 1] + histogram[i];
+  }
+  
+  // Normalizar CDF
+  const cdfMin = cdf.find(val => val > 0);
+  for (let i = 0; i < 256; i++) {
+    cdf[i] = Math.round(((cdf[i] - cdfMin) / (totalPixels - cdfMin)) * 255);
+  }
+  
+  // Aplicar equalização
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+    const equalizedValue = cdf[gray];
+    
+    // Manter as proporções de cor originais
+    const factor = equalizedValue / (gray || 1);
+    
+    output[i] = Math.max(0, Math.min(255, data[i] * factor));     // R
+    output[i + 1] = Math.max(0, Math.min(255, data[i + 1] * factor)); // G
+    output[i + 2] = Math.max(0, Math.min(255, data[i + 2] * factor)); // B
+    output[i + 3] = data[i + 3]; // Alpha
+  }
+  
+  return new ImageData(output, imageData.width, imageData.height);
+};
+
+// Função auxiliar para aplicar filtros que requerem ImageData a partir de uma imagem
+export const applyImageDataFilter = (image, filterFunction, ...args) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const ctx = canvas.getContext('2d');
+  
+  ctx.drawImage(image, 0, 0);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  
+  const filteredImageData = filterFunction(imageData, ...args);
+  ctx.putImageData(filteredImageData, 0, 0);
+  
+  return canvas.toDataURL();
+};
+

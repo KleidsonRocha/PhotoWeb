@@ -23,6 +23,9 @@ import FlipIcon from '@mui/icons-material/Flip';
 import TuneIcon from '@mui/icons-material/Tune';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 import FilterIcon from '@mui/icons-material/Filter';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import TransformIcon from '@mui/icons-material/Transform';
+import FilterVintageIcon from '@mui/icons-material/FilterVintage';
 
 const FeatureCard = styled(Card)(({ theme }) => ({
   height: '100%',
@@ -107,6 +110,27 @@ const features = [
     icon: <FilterIcon fontSize="large" />,
     path: '/morphological-operations',
     color: '#9c27b0'
+  },
+  {
+    title: 'Melhoramento de Imagem',
+    description: 'Ajuste brilho, contraste, saturação e aplique filtros especiais.',
+    icon: <AutoFixHighIcon fontSize="large" />,
+    path: '/image-enhancer',
+    color: '#ff5722'
+  },
+  {
+    title: 'Transformações de Imagem',
+    description: 'Rotacione, espelhe e redimensione imagens facilmente.',
+    icon: <TransformIcon fontSize="large" />,
+    path: '/image-transformer',
+    color: '#607d8b'
+  },
+  {
+    title: 'Filtros Avançados',
+    description: 'Aplique filtros avançados como blur, nitidez, relevo e mais.',
+    icon: <FilterVintageIcon fontSize="large" />,
+    path: '/advanced-filters',
+    color: '#795548'
   }
 ];
 

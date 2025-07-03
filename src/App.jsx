@@ -18,6 +18,7 @@ import ImageEnhancer from './components/tools/ImageEnhancer';
 import ImageTransformer from './components/tools/ImageTransformer';
 import AdvancedFilters from './components/filters/AdvancedFilters';
 import Home from './components/common/Home';
+import Blending from './components/filters/Blending';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
             <Route path="/image-transformer" element={<ImageTransformer />} />
             <Route path="/advanced-filters" element={<AdvancedFilters />} />
             <Route path="/morphological-operations" element={<MorphologicalOperations />} />
+            <Route path='/blending' element={<Blending />} />
           </Routes>
         </Router>
       </NavbarProvider>

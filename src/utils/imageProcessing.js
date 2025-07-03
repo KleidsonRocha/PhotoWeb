@@ -23,6 +23,223 @@ export const applyGaussianBlur = (imageData, width, height) => {
   return applyConvolution(imageData, width, height, kernel);
 };
 
+// Realiza o blending de duas imagens usando diferentes modos de mesclagem
+export const blendImages = (image1, image2, mode = 'normal', opacity = 1.0) => {
+  // Criar canvas para a primeira imagem
+  const canvas1 = document.createElement('canvas');
+  canvas1.width = image1.width;
+  canvas1.height = image1.height;
+  const ctx1 = canvas1.getContext('2d');
+  ctx1.drawImage(image1, 0, 0);
+  
+  // Criar canvas para a segunda imagem
+  const canvas2 = document.createElement('canvas');
+  canvas2.width = image1.width; // Usar as dimensões da primeira imagem
+  canvas2.height = image1.height;
+  const ctx2 = canvas2.getContext('2d');
+  
+  // Redimensionar a segunda imagem para corresponder à primeira
+  ctx2.drawImage(image2, 0, 0, image1.width, image1.height);
+  
+  // Obter dados de pixel de ambas as imagens
+  const imageData1 = ctx1.getImageData(0, 0, canvas1.width, canvas1.height);
+  const imageData2 = ctx2.getImageData(0, 0, canvas2.width, canvas2.height);
+  const data1 = imageData1.data;
+  const data2 = imageData2.data;
+  
+  // Criar array para o resultado
+  const result = new Uint8ClampedArray(data1.length);
+  
+  // Aplicar o modo de blending selecionado
+  for (let i = 0; i < data1.length; i += 4) {
+    const r1 = data1[i];
+    const g1 = data1[i + 1];
+    const b1 = data1[i + 2];
+    const a1 = data1[i + 3] / 255;
+    
+    const r2 = data2[i];
+    const g2 = data2[i + 1];
+    const b2 = data2[i + 2];
+    const a2 = (data2[i + 3] / 255) * opacity;
+    
+    let r, g, b;
+    
+    switch (mode.toLowerCase()) {
+      case 'normal':
+        // Mistura normal com opacidade
+        r = r1 * (1 - a2) + r2 * a2;
+        g = g1 * (1 - a2) + g2 * a2;
+        b = b1 * (1 - a2) + b2 * a2;
+        break;
+        
+      case 'add':
+      case 'addition':
+      case 'soma':
+        // Soma os valores de pixel
+        r = Math.min(255, r1 + r2 * opacity);
+        g = Math.min(255, g1 + g2 * opacity);
+        b = Math.min(255, b1 + b2 * opacity);
+        break;
+        
+      case 'subtract':
+      case 'subtraction':
+      case 'subtracao':
+        // Subtrai os valores de pixel
+        r = Math.max(0, r1 - r2 * opacity);
+        g = Math.max(0, g1 - g2 * opacity);
+        b = Math.max(0, b1 - b2 * opacity);
+        break;
+        
+      case 'multiply':
+      case 'multiplicacao':
+        // Multiplica os valores de pixel
+        r = (r1 * r2) / 255;
+        g = (g1 * g2) / 255;
+        b = (b1 * b2) / 255;
+        break;
+        
+      case 'screen':
+        // Modo screen (inverso da multiplicação)
+        r = 255 - (((255 - r1) * (255 - r2)) / 255);
+        g = 255 - (((255 - g1) * (255 - g2)) / 255);
+        b = 255 - (((255 - b1) * (255 - b2)) / 255);
+        break;
+        
+      case 'overlay':
+        // Modo overlay
+        r = r1 < 128 ? (2 * r1 * r2) / 255 : 255 - (2 * (255 - r1) * (255 - r2)) / 255;
+        g = g1 < 128 ? (2 * g1 * g2) / 255 : 255 - (2 * (255 - g1) * (255 - g2)) / 255;
+        b = b1 < 128 ? (2 * b1 * b2) / 255 : 255 - (2 * (255 - b1) * (255 - b2)) / 255;
+        break;
+        
+      case 'difference':
+      case 'diferenca':
+        // Modo diferença
+        r = Math.abs(r1 - r2);
+        g = Math.abs(g1 - g2);
+        b = Math.abs(b1 - b2);
+        break;
+        
+      case 'lighten':
+      case 'clarear':
+        // Pega o valor mais claro
+        r = Math.max(r1, r2);
+        g = Math.max(g1, g2);
+        b = Math.max(b1, b2);
+        break;
+        
+      case 'darken':
+      case 'escurecer':
+        // Pega o valor mais escuro
+        r = Math.min(r1, r2);
+        g = Math.min(g1, g2);
+        b = Math.min(b1, b2);
+        break;
+        
+      case 'exclusion':
+      case 'exclusao':
+        // Modo exclusão
+        r = r1 + r2 - ((r1 * r2) / 128);
+        g = g1 + g2 - ((g1 * g2) / 128);
+        b = b1 + b2 - ((b1 * b2) / 128);
+        break;
+        
+      case 'color-dodge':
+      case 'dodge':
+        // Color dodge
+        r = r1 === 0 ? 0 : r2 === 255 ? 255 : Math.min(255, (r1 * 255) / (255 - r2));
+        g = g1 === 0 ? 0 : g2 === 255 ? 255 : Math.min(255, (g1 * 255) / (255 - g2));
+        b = b1 === 0 ? 0 : b2 === 255 ? 255 : Math.min(255, (b1 * 255) / (255 - b2));
+        break;
+        
+      case 'color-burn':
+      case 'burn':
+        // Color burn
+        r = r1 === 255 ? 255 : r2 === 0 ? 0 : Math.max(0, 255 - ((255 - r1) * 255) / r2);
+        g = g1 === 255 ? 255 : g2 === 0 ? 0 : Math.max(0, 255 - ((255 - g1) * 255) / g2);
+        b = b1 === 255 ? 255 : b2 === 0 ? 0 : Math.max(0, 255 - ((255 - b1) * 255) / b2);
+        break;
+        
+      case 'hard-light':
+        // Hard light
+        r = r2 < 128 ? (2 * r1 * r2) / 255 : 255 - (2 * (255 - r1) * (255 - r2)) / 255;
+        g = g2 < 128 ? (2 * g1 * g2) / 255 : 255 - (2 * (255 - g1) * (255 - g2)) / 255;
+        b = b2 < 128 ? (2 * b1 * b2) / 255 : 255 - (2 * (255 - b1) * (255 - b2)) / 255;
+        break;
+        
+      case 'soft-light':
+        // Soft light
+        r = r2 < 128 ? 
+          2 * ((r1 >> 1) + 64) * (r2 / 255) : 
+          255 - (2 * (255 - ((r1 >> 1) + 64)) * (255 - r2) / 255);
+        g = g2 < 128 ? 
+          2 * ((g1 >> 1) + 64) * (g2 / 255) : 
+          255 - (2 * (255 - ((g1 >> 1) + 64)) * (255 - g2) / 255);
+        b = b2 < 128 ? 
+          2 * ((b1 >> 1) + 64) * (b2 / 255) : 
+          255 - (2 * (255 - ((b1 >> 1) + 64)) * (255 - b2) / 255);
+        break;
+        
+      case 'average':
+      case 'media':
+        // Média simples
+        r = (r1 + r2) / 2;
+        g = (g1 + g2) / 2;
+        b = (b1 + b2) / 2;
+        break;
+        
+      case 'negation':
+      case 'negacao':
+        // Negação
+        r = 255 - Math.abs(255 - r1 - r2);
+        g = 255 - Math.abs(255 - g1 - g2);
+        b = 255 - Math.abs(255 - b1 - b2);
+        break;
+        
+      default:
+        // Padrão para normal
+        r = r1 * (1 - a2) + r2 * a2;
+        g = g1 * (1 - a2) + g2 * a2;
+        b = b1 * (1 - a2) + b2 * a2;
+    }
+    
+    // Arredondar e limitar valores entre 0-255
+    result[i] = Math.round(Math.max(0, Math.min(255, r)));
+    result[i + 1] = Math.round(Math.max(0, Math.min(255, g)));
+    result[i + 2] = Math.round(Math.max(0, Math.min(255, b)));
+    result[i + 3] = Math.round(Math.max(0, Math.min(255, a1 * 255))); // Manter o alpha da imagem base
+  }
+  
+  // Criar nova ImageData e aplicar ao canvas
+  const resultImageData = new ImageData(result, canvas1.width, canvas1.height);
+  ctx1.putImageData(resultImageData, 0, 0);
+  
+  return {
+    processedImageData: canvas1.toDataURL(),
+    blendMode: mode,
+    opacity: opacity
+  };
+};
+
+// Função auxiliar para aplicar o blending a partir de elementos de imagem
+export const blendImageElements = (img1, img2, mode = 'normal', opacity = 1.0) => {
+  // Verificar se as imagens estão carregadas
+  if (!img1.complete || !img2.complete) {
+    return new Promise((resolve) => {
+      const checkLoaded = () => {
+        if (img1.complete && img2.complete) {
+          resolve(blendImages(img1, img2, mode, opacity));
+        } else {
+          setTimeout(checkLoaded, 100);
+        }
+      };
+      checkLoaded();
+    });
+  }
+  
+  return blendImages(img1, img2, mode, opacity);
+};
+
 // Aplica uma matriz de convolução aos pixels da imagem
 // Usado como base para vários filtros como blur, detecção de bordas, etc.
 export const applyConvolution = (imageData, width, height, kernel) => {

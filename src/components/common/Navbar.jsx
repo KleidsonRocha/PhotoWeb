@@ -138,6 +138,15 @@ function Navbar() {
                   <ListItemText primary="Detector de Bordas" />
                 </ListItem>
               </NavLink>
+
+              <NavLink to="/blending">
+                <ListItem button selected={isActive('/blending')} sx={{ pl: 4 }}>
+                  <ListItemIcon>
+                    <BorderAllIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Mixer de Imagens" />
+                </ListItem>
+              </NavLink>
               
               <NavLink to="/gaussian-filter">
                 <ListItem button selected={isActive('/gaussian-filter')} sx={{ pl: 4 }}>

@@ -56,6 +56,13 @@ const features = [
     color: '#3f51b5'
   },
   {
+    title: 'Mixer de imagens',
+    description: 'COmbine duas imagens com diferentes modos de mistura.',
+    icon: <FilterVintageIcon fontSize="large" />,
+    path: '/blending',
+    color: '#795548'
+  },
+  {
     title: 'Filtro Gaussiano',
     description: 'Suavize imagens com filtro gaussiano personalizado.',
     icon: <BlurOnIcon fontSize="large" />,
